@@ -178,3 +178,16 @@ All times IST. Deadline: Sat 7 Nov 2026, 23:59. Submit by 21:00.
 - xai/grok-4.7: OK (9 s)
 
 **Next.** Restart Switch Console fully from the app menu (the controller only reads PATH at start), then Recheck.
+
+## 2026-11-06, 22:18: room created (G1 passed)
+
+- Switch controller restarted at 22:16 and resolves `opencode` to 1.19.5 (checked in `/proc/<pid>/environ`).
+- Template import succeeded: agents `triage`, `fixer`, `reviewer` and `#release-room` on Discord. The kickoff posted, and all three agents greeted the room, each naming its model (DeepSeek-V4.1-Flash-1017, GLM-5.3, grok-4.7).
+
+**How Switch maps permissions (from `opencode/config.ts` and `opencode-adapter.ts`, read 2026-11-06).** This changes the gate design.
+- `auto_mode: true` ("auto"): the adapter approves every `ask`, like OpenCode's `--auto`. Only what the agent's own `opencode.json` **denies** stays denied. Our `ask` rules for `git push` and `gh pr` would therefore be approved automatically. Triage and the reviewer rely on `deny` rules, which still hold.
+- `auto_mode: false` ("approval required"): Switch's session rules put `* → ask` after the agent's own config, so they win. Every edit and every `bash` command asks in the room. Only reads, glob, grep, list, skill, task and todo never ask.
+- So the fixer (auto off) gives a real Switch permission prompt on `git push` and `gh pr create`, but also on its other commands. "Allow for this session" lets repeated commands through.
+- There is also an "auto-accept edits" runtime mode (edits allowed, bash asks), which Console can set after creation.
+
+**Plan for the rehearsal.** Run the fixer as created. Count the prompts. If there are too many, switch the fixer to auto-accept edits in Console. Use "Allow for this session" for tests and commits, and "Allow once" for `git push` and `gh pr create`, so the release gate is visible on screen.
