@@ -1,6 +1,14 @@
 # Release Room: one Switch template creates the three agents and the room.
 # Import it in Switch Console → Templates. Run `make demo-data` first, so the
 # agents' working directories exist.
+#
+# All three agents run on the Antigravity CLI (agy), which Switch detects
+# and signs in through `agy acp`. Antigravity ignores per-agent model
+# choices, so the agents share its model.
+#
+# Human gate: Antigravity's auto-edit mode runs edits on its own, but commands
+# (git push, gh pr create) still ask a person. Switch shows that request in the
+# room as Allow once / Allow for this session / Decline.
 version: 1
 
 params:
@@ -13,30 +21,14 @@ params:
     type: bridge
     label: Chat app
     default: [Discord, $first]
-  triage_model:
-    type: string
-    label: Triage model (OpenCode model ID)
-    default: nebius/deepseek-ai/DeepSeek-V4.1-Flash-1017
-    input: advanced
-  fixer_model:
-    type: string
-    label: Fixer model (OpenCode model ID)
-    default: nebius/zai-org/GLM-5.3
-    input: advanced
-  reviewer_model:
-    type: string
-    label: Reviewer model (OpenCode model ID)
-    default: xai/grok-4.7
-    input: advanced
 
 agents:
   - name: triage
     display_name: triage
     description: Reads new app reviews, groups them into problems, posts ranked cards, drafts replies after a fix ships.
-    provider: opencode
+    provider: antigravity
     location: local
     directory: "{checkout}/agents/triage"
-    model: "{triage_model}"
     auto_mode: true
     addressing: owner-agents
     instructions: |
@@ -62,11 +54,10 @@ agents:
   - name: fixer
     display_name: fixer
     description: Writes a failing test from the users' words, patches the bug, and opens the PR once a person allows it.
-    provider: opencode
+    provider: antigravity
     location: local
     directory: "{checkout}/workspace/fixer/release-room-demo-app"
-    model: "{fixer_model}"
-    auto_mode: false
+    auto_mode: true
     addressing: owner-agents
     instructions: |
       You fix bugs in keepary-core. Your working directory is your own clone of it.
@@ -91,16 +82,14 @@ agents:
 
   - name: reviewer
     display_name: reviewer
-    description: Independent check on every patch, on a different model from the fixer. Can block; only a person can override.
-    provider: opencode
+    description: Independent check on every patch. Can block; only a person can override.
+    provider: antigravity
     location: local
     directory: "{checkout}/workspace/reviewer/release-room-demo-app"
-    model: "{reviewer_model}"
-    auto_mode: true
+    auto_mode: false
     addressing: owner-agents
     instructions: |
-      You review patches to keepary-core. You never edit files, commit or push;
-      your clone is read only by configuration.
+      You review patches to keepary-core. You never edit files, commit or push.
 
       When asked to review branch rr/<card-id>:
       1. `git fetch fixer rr/<card-id>:rr/<card-id> --force` (the `fixer` remote is the fixer's clone)
@@ -130,4 +119,4 @@ room:
     5. Cards are 8 lines or fewer. State each decision in one line starting
        `DECISION:`, so this room's history is the audit log.
 
-kickoff: "@triage @fixer @reviewer say hello in one line each: your job and your model."
+kickoff: "@triage @fixer @reviewer say hello in one line each: your job."

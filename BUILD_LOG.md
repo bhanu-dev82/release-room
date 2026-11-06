@@ -142,3 +142,28 @@ All times IST. Deadline: Sat 7 Nov 2026, 23:59. Submit by 21:00.
 **Still needed.**
 - 1.x has no Nebius or xAI login yet. The template's three models need `opencode-switch auth login` for Nebius Token Factory and for xAI. The 1.x model list only shows models from connected providers.
 - Switch Console must be fully quit and started from the app menu, so the new PATH applies.
+
+## 2026-11-06, ~20:50: OpenCode removed, agents moved to Antigravity (agy)
+
+**Removed.** The 1.x OpenCode install I had added for Switch (1.19.5, `~/.local/opencode-switch`, its wrapper and data folder). There was no 1.9 on this machine. Your daily OpenCode 2.2.3 is untouched, and so is `~/.local/share/opencode/`. The Switch launcher now only sets the password store.
+
+**Why agy.** `agy` is Google's Antigravity CLI, version 1.5.2. Switch detects it under the name `agy` (`binaryNames: ['agy', 'antigravity-acp']`), and it can run agents over `agy acp`. Switch's OpenCode check is gone with it.
+
+**Checked.**
+- `agy` resolves on the login-shell PATH (`~/.local/bin/agy`), and `--version` returns 1.5.2.
+- ACP handshake (`initialize`) returns protocol 1 and Antigravity ACP Server 1.5.2.
+- `session/list` returns your existing sessions. Switch's Antigravity sign-in check treats that as signed in.
+- Switch reads `~/.local/bin` again on Refresh. The `agy` file dates from 20:35, so the earlier "CLI not installed" was likely a stale scan. Refresh in Settings → Agent providers should fix that.
+
+**Template changes.**
+- All three agents use `provider: antigravity`. The model fields are gone, because the Antigravity plugin has no model list.
+- Triage and fixer use `auto_mode: true`: edits run, commands ask. Reviewer uses `auto_mode: false`.
+- The push and PR commands are the human gate. Antigravity asks for each command, and Switch shows Allow once / Allow for this session / Decline in the room.
+
+**Trade-offs.**
+- The agents now share one model family, Gemini. The README's "different model family for the reviewer" claim no longer holds, and it needs rewording before submission.
+- The `agents/*/opencode.json` files are no longer used. The permission gate now comes from Antigravity's auto-edit mode.
+
+**Still open.**
+- Switch's OpenCode Path Override points at the deleted 1.x wrapper. Set it back to Auto, or leave it, since OpenCode isn't used.
+- The README, the `opencode.json` files and this log's older OpenCode entries need updating before submission.

@@ -1,10 +1,15 @@
-# Model per agent role. Each ID must match `opencode models`.
-# Keep these in sync with the Model field under Advanced in Switch Console.
-# To swap a model: change one line here, update that agent in Switch Console,
-# then re-run the gate G2 check before the demo.
-provider: opencode
+# Which provider runs each agent. Keep this in sync with
+# switch/release-room.template.yaml.
+#
+# All three agents run on the Antigravity CLI (agy). Switch can't select
+# Antigravity's model per agent (its provider plugin has no model list), so
+# the model is whatever agy is set to.
+#
+# Earlier plan (OpenCode with nebius/xai models) was dropped: OpenCode 2.x isn't
+# supported by Switch 0.40, and 1.x needed a separate install.
+provider: antigravity
 
 roles:
-  triage:   nebius/deepseek-ai/DeepSeek-V4.1-Flash-1017   # reads reviews, writes cards
-  fixer:    nebius/zai-org/GLM-5.3                         # writes tests and patches
-  reviewer: xai/grok-4.7                                   # independent check on the patch
+  triage:   antigravity   # reads reviews, writes cards
+  fixer:    antigravity   # writes tests and patches; pushes and PRs need a person's Allow
+  reviewer: antigravity   # independent check on the patch; read-only by instruction
