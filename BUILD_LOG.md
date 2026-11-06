@@ -122,3 +122,23 @@ All times IST. Deadline: Sat 7 Nov 2026, 23:59. Submit by 21:00.
 - Both 1.x and the models.dev catalogue know `nebius` (`NEBIUS_API_KEY`) and `xai` (`XAI_API_KEY`), and all three chosen model IDs are listed.
 - [HUMAN] Log in for 1.x: `opencode-switch auth login` → Nebius, then xAI. Then in Switch: Agent providers → OpenCode → Change source → Path Override → `/home/bhd/.local/bin/opencode-switch` → Recheck.
 - The OpenCode Console key saved in the old `auth.json` has expired ("Create a new API key in OpenCode Console"). Unused by our three models.
+
+## 2026-11-06, ~18:00: template import blocked, controller PATH
+
+**Symptom.** In Switch's template form, "Create all" is disabled: "None of your machines on this server can run triage, fixer, or reviewer yet: opencode isn't installed or ready (login could not be checked)." The form shows Machine: "Not set by the template".
+
+**Cause (from Switch's source, `console/packages/agent-controller/src/doctor.ts` and `status.ts`).**
+- The machine's own controller decides provider readiness, not Console's Path Override.
+- It finds the CLI with `PathProviderLocator`, which takes the first `opencode` on PATH. The login-shell PATH gives `~/.opencode/bin` (OpenCode 2.2.3), so the 1.x Path Override never applies.
+- The 2.x check fails, so the controller reports "login could not be checked" (switch#1421).
+
+**Verified.** The 1.x wrapper passes the same steps the controller runs. `opencode serve` prints `opencode server listening on …` (the prefix Switch waits for). `/global/health` returns `{"healthy":true,"version":"1.19.5"}`. `/provider` lists `openrouter` and `opencode`.
+
+**Fix (Switch only).**
+- `~/.local/opencode-switch/bin/opencode` is the 1.x wrapper under the name `opencode`.
+- `~/.local/bin/switch-console-launch` puts that folder first on PATH, then starts Switch Console with `--password-store=gnome-libsecret`.
+- The app menu entry now runs the launcher. Your terminal still finds 2.2.3.
+
+**Still needed.**
+- 1.x has no Nebius or xAI login yet. The template's three models need `opencode-switch auth login` for Nebius Token Factory and for xAI. The 1.x model list only shows models from connected providers.
+- Switch Console must be fully quit and started from the app menu, so the new PATH applies.
