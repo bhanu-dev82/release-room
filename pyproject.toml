@@ -1,0 +1,14 @@
+[project]
+name = "release-room"
+version = "0.1.0"
+description = "Release desk for a one-person app studio: Switch agents triage reviews, fix bugs and draft replies, with a human gate."
+requires-python = ">=3.12"
+license = { text = "MIT" }
+dependencies = ["scikit-learn>=1.5"]
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
