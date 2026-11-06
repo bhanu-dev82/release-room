@@ -160,3 +160,21 @@ All times IST. Deadline: Sat 7 Nov 2026, 23:59. Submit by 21:00.
 1. `opencode-switch auth login`, then Nebius Token Factory and paste the key.
 2. `opencode-switch auth login`, then xAI. The 1.x login may ask for an API key from console.x.ai rather than your subscription login.
 3. Quit Switch Console and reopen it from the app menu. Then Settings → Agent providers → OpenCode → Recheck should read Signed in.
+
+## 2026-11-06, ~21:45: "Sign-in could not be checked" came back
+
+**Symptom.** Settings → Agent providers → OpenCode shows v1.19.5 (Path Override) but "Sign-in could not be checked… as its agents controller reported it to Switch".
+
+**Cause.** The controller (a separate process) finds `opencode` on its own PATH, and the Path Override only affects Console's own check. Console builds the controller's PATH from your login shell, and `~/.bashrc` line 159 (added by OpenCode 2.x's installer) puts `~/.opencode/bin` first. `/proc/<controller>/environ` showed `~/.opencode/bin` third and the 1.x shim eighth. It picked 2.2.3, which fails the check (switch#1421).
+
+**Fix.**
+- `~/.bashrc` line 159 now reads `[ -z "$SWITCH_OPENCODE_V1" ] && export PATH=/home/bhd/.opencode/bin:$PATH`. Backup: `~/.bashrc.bak-before-switch-opencode`.
+- `~/.local/bin/switch-console-launch` exports `SWITCH_OPENCODE_V1=1`, so only shells started under Switch Console skip that line.
+- Test: a login shell with the launcher's environment gives `opencode` → 1.19.5. A normal terminal still gives 2.2.3.
+
+**Model check through OpenCode 1.19.5** (logins now in the Switch data folder: Nebius api key, xAI oauth).
+- nebius/deepseek-ai/DeepSeek-V4.1-Flash-1017: OK (10 s)
+- nebius/zai-org/GLM-5.3: OK (9 s)
+- xai/grok-4.7: OK (9 s)
+
+**Next.** Restart Switch Console fully from the app menu (the controller only reads PATH at start), then Recheck.
