@@ -36,3 +36,45 @@ All times IST. Deadline: Sat 7 Nov 2026, 23:59. Submit by 21:00.
 **Next**
 - M1 gates G1 to G5 once Switch Console is installed.
 - M3: `tools/` (ingest, cluster, score, cards) with tests.
+
+## 2026-11-06, M3 and M4 (tools, template, permissions)
+
+**Decisions**
+- **Solo entry.** The rules allow solo ("at least one AI agent and one person"). The second human is dropped from the demo.
+- **Discord for the demo**, because judges recognise it. The README will also point to Switch's bundled Mattermost as the zero-setup way to reproduce, so a judge never has to create a Discord bot.
+- **All three agents on OpenCode**, with three different models (see `config/models.yaml`). The reviewer is on a different model family from the fixer.
+- **The human gate is OpenCode's own permission prompt, relayed by Switch.**
+  - The fixer's `opencode.json` sets `git push *` and `gh pr *` to `ask`.
+  - The fixer runs with Switch Auto mode **off**. OpenCode's auto mode approves `ask` rules; only `deny` survives it.
+  - Expected result: only push/PR prompts reach the chat. To be confirmed in gate G2.
+- **Each agent gets its own folder and config.**
+  - OpenCode merges every `opencode.json` from the working directory up through parent folders, so a root config would leak into the agents' clones. I deleted it.
+  - Checked with `opencode debug config`: each agent loads only its own file.
+  - triage (`agents/triage`): no edits, no commit, push or `gh`.
+  - fixer (`workspace/fixer/...`): edits and commits; push and PR ask a person.
+  - reviewer (`workspace/reviewer/...`): no edits, commit, push or `gh`. It fetches the fixer's branch through a `fixer` git remote.
+
+**Built**
+- `tools/`: ingest (Play Console or sample CSV, UTF-16 aware, masks emails and phone numbers, drops reviewer names), cluster (TF-IDF + agglomerative, deterministic), score, cards (8 lines or fewer), replies (350-character Play limit), triage CLI.
+- `data/reviews.synthetic.csv`: 66 synthetic reviews from `tools/make_sample.py` (seed 42): 22 crash (B1), 18 lakh format (B2), 14 Hindi total (B3), 12 noise.
+- `make triage` gives exactly 3 cards, each 100% pure against the labels. The 5-star noise is excluded by `--max-stars 3`.
+  - CARD-1 crash, severity 58
+  - CARD-2 lakh format, 40.5
+  - CARD-3 Hindi total, 37.9
+- `switch/release-room.template.yaml`: 3 agents and 1 room, with room instructions and a kickoff. Field names follow docs/TEMPLATES.md.
+- `make demo-data` / `make reset` / `make check` (tests plus a tracked-secrets scan).
+- Tests: **28 passed**.
+
+**Tuning record (clustering)**
+- At distance threshold 0.85 the lakh cluster split in two. At 0.9 to 0.97 the three clusters were stable, so I chose 0.9.
+- One 5-star review ("Best receipt app I have used") joined the crash cluster. Fixed by triaging complaints only (3 stars or fewer).
+- Added review filler words ("app", "please", "don"…) to the stop words.
+
+**Blocked on you**
+1. [HUMAN] Discord bot setup and server connection in Switch Console.
+2. [HUMAN] OK to make the two repos public on GitHub. The fixer's PR step and `make demo-data`'s default URL need `bhanu-dev82/release-room-demo-app` to exist.
+
+**Next**
+- Gates G1 to G5 in Switch.
+- A B1 dry run of each model in OpenCode.
+- README, video, submission.
