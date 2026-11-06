@@ -99,3 +99,26 @@ All times IST. Deadline: Sat 7 Nov 2026, 23:59. Submit by 21:00.
 - 23 s. It wrote a failing test from the complaint, saw it fail with `AttributeError`, fixed `parse_receipt`, and committed on `rr/card-1`.
 - 2 files, +8/−2. An independent test run: **8 passed**.
 - The 6-line summary (Cause/Fix/Test/Files/Risk/Diff) matched the format in the instructions.
+
+## 2026-11-06, ~17:30: repos public, OpenCode version problem
+
+**Published.** Both repos are public with MIT licences (GitHub detects them), topics and a README written for judges.
+- https://github.com/bhanu-dev82/release-room
+- https://github.com/bhanu-dev82/release-room-demo-app (tag `seeded` = the commit with the three bugs)
+
+`make reset` now clones from GitHub. A dry-run `git push` of a branch from the fixer's clone succeeds, and `gh` has admin access to the repo.
+
+**CI removed.** GitHub Actions won't start jobs on this account: "account is locked due to a billing issue". I deleted the workflow files and badges rather than show judges a red badge. Tests run with `make test` / `make check`.
+
+**"Sign-in could not be checked" for OpenCode in Switch** is a known Switch bug: [switch#1421](https://github.com/sandbox-quantum/switch/issues/1421), P1, open. Switch 0.40 supports OpenCode 1.x only.
+- OpenCode 2.x prints `server listening`; Switch waits for `opencode server listening`.
+- 2.x also returns HTML from `/global/health` and `/provider`.
+- I reproduced both against the installed 2.2.3.
+
+**Fix without touching the daily OpenCode 2.2.3:**
+- Installed `opencode-ai@1.19.5` into `~/.local/opencode-switch/`.
+- Wrapper `~/.local/bin/opencode-switch` sets its own `XDG_DATA_HOME` (`~/.local/share/opencode-switch`), so 1.x never opens 2.x's database.
+- 1.x has its own empty `auth.json`. 2.x keeps its logins in its database, and 1.x's file format differs, so I didn't share files.
+- Both 1.x and the models.dev catalogue know `nebius` (`NEBIUS_API_KEY`) and `xai` (`XAI_API_KEY`), and all three chosen model IDs are listed.
+- [HUMAN] Log in for 1.x: `opencode-switch auth login` → Nebius, then xAI. Then in Switch: Agent providers → OpenCode → Change source → Path Override → `/home/bhd/.local/bin/opencode-switch` → Recheck.
+- The OpenCode Console key saved in the old `auth.json` has expired ("Create a new API key in OpenCode Console"). Unused by our three models.
