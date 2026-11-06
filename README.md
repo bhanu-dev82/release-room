@@ -3,7 +3,6 @@
 **A release desk for a one-person app studio, run in one Discord room by Switch.**
 Three AI agents triage app-store reviews, fix the bugs behind them and review each other's work. One person holds the release lever.
 
-[![tests](https://github.com/bhanu-dev82/release-room/actions/workflows/ci.yml/badge.svg)](https://github.com/bhanu-dev82/release-room/actions/workflows/ci.yml)
 ![license: MIT](https://img.shields.io/badge/license-MIT-blue)
 Built for the [Flip the Switch hackathon](https://www.wemakedevs.org/hackathons/switch) · Track 1: Best Business Workflow
 
