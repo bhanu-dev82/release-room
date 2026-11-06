@@ -1,0 +1,10 @@
+# Model per agent role. Each ID must match `opencode models`.
+# Keep these in sync with the Model field under Advanced in Switch Console.
+# To swap a model: change one line here, update that agent in Switch Console,
+# then re-run the gate G2 check before the demo.
+provider: opencode
+
+roles:
+  triage:   nebius/deepseek-ai/DeepSeek-V4.1-Flash-1017   # reads reviews, writes cards
+  fixer:    nebius/zai-org/GLM-5.3                         # writes tests and patches
+  reviewer: xai/grok-4.7                                   # independent check on the patch
