@@ -78,3 +78,24 @@ All times IST. Deadline: Sat 7 Nov 2026, 23:59. Submit by 21:00.
 - Gates G1 to G5 in Switch.
 - A B1 dry run of each model in OpenCode.
 - README, video, submission.
+
+## 2026-11-06, ~16:20: Switch up, model checks
+
+**Switch**
+- Fixed "Secure secret storage is unavailable". KDE picked KWallet, which is disabled on this machine.
+  - The fix: launch with `--password-store=gnome-libsecret` (GNOME Keyring is running and unlocked), per Switch's Linux troubleshooting docs.
+  - It's set in a user copy of the launcher, `~/.local/share/applications/switch-console.desktop`.
+- Local Switch server running (server 0.31.0, Console 0.40.1). Discord connected as @bhanu82. One room so far (#general), with 0 agents.
+
+**Model checks** (`opencode run`, prompt "Reply with exactly: OK")
+
+| Role | Model | Result |
+|---|---|---|
+| triage | nebius/deepseek-ai/DeepSeek-V4.1-Flash-1017 | OK (3 s) |
+| fixer | nebius/zai-org/GLM-5.3 | OK (2 s) |
+| reviewer | xai/grok-4.7 | **Fail**: `invalid_grant: Invalid or unknown refresh token`. OpenCode's stored xAI login has expired, so it needs a fresh `opencode auth login`. |
+
+**Fixer dry run on B1** (GLM-5.3, throwaway clone in /tmp, no Switch)
+- 23 s. It wrote a failing test from the complaint, saw it fail with `AttributeError`, fixed `parse_receipt`, and committed on `rr/card-1`.
+- 2 files, +8/−2. An independent test run: **8 passed**.
+- The 6-line summary (Cause/Fix/Test/Files/Risk/Diff) matched the format in the instructions.
